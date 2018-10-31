@@ -30,7 +30,7 @@ public class Runner {
     private String url;
     @Value("${driver_path}")
     private String driverPath;
-    @Value("${user}")
+    @Value("${gpuser}")
     private String user;
     @Value("${pass}")
     private String pass;
@@ -104,7 +104,7 @@ public class Runner {
     private List<LocalDate> getDatesBetween(
             LocalDate startDate, LocalDate endDate) {
 
-        long numOfDaysBetween = ChronoUnit.DAYS.between(startDate, endDate);
+        long numOfDaysBetween = ChronoUnit.DAYS.between(startDate, endDate)+1l;
         if (numOfDaysBetween > 0) {
             return IntStream.iterate(0, i -> i + 1)
                     .limit(numOfDaysBetween)
