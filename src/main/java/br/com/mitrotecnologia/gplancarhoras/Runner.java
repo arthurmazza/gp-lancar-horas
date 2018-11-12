@@ -3,8 +3,7 @@ package br.com.mitrotecnologia.gplancarhoras;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -12,6 +11,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +23,35 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class Runner {
+
+    private static final int SATURDAY = 6;
+    private static final int SUNDAY = 7;
+
+    private static final Set<Integer> WEEKEND;
+    private static final Set<LocalDate> HOLIDAYS;
+
+    static {
+        List<Integer> dates = Arrays.asList(SATURDAY, SUNDAY);
+        WEEKEND = Collections.unmodifiableSet(new HashSet<>(dates));
+    }
+
+    static {
+        List<LocalDate> dates = Arrays.asList(
+                LocalDate.of(2018, 1, 1),
+                LocalDate.of(2018, 3, 30),
+                LocalDate.of(2018, 4, 21),
+                LocalDate.of(2018, 5, 1),
+                LocalDate.of(2018, 5, 31),
+                LocalDate.of(2018, 8, 15),
+                LocalDate.of(2018, 8, 31),
+                LocalDate.of(2018, 9, 7),
+                LocalDate.of(2018, 10, 12),
+                LocalDate.of(2018, 11, 2),
+                LocalDate.of(2018, 11, 15),
+                LocalDate.of(2018, 11, 20),
+                LocalDate.of(2018, 12, 25));
+        HOLIDAYS = Collections.unmodifiableSet(new HashSet<>(dates));
+    }
 
     private static final String CHROME_DRIVER_NAME = "webdriver.chrome.driver";
 
@@ -50,6 +79,7 @@ public class Runner {
             WebDriver driver = getWebDriver();
             doLogin(driver);
             inputHours(driver);
+            driver.close();
         } catch (Exception ex) {
             System.err.println(ex);
         }
@@ -63,7 +93,7 @@ public class Runner {
             driver.findElement(By.id("b1")).click();
             driver.findElement(By.id("monthSelect")).click();
             String month = String.format("monthDiv_%s", date.getMonthValue() - 1);
-            String year = String.format("yearDiv%s", date.getYear()-1);
+            String year = String.format("yearDiv%s", date.getYear() - 1);
             driver.findElement(By.id(month)).click();
             driver.findElement(By.xpath("//*[@id=\"topBar\"]/div[3]")).click();
             driver.findElement(By.id(year)).click();
@@ -80,20 +110,21 @@ public class Runner {
             driver.findElement(By.name("DesAplicativo")).sendKeys(appName);
             driver.findElement(By.name("horas_trab")).sendKeys(workedHours);
             driver.findElement(By.name("BtGravar")).click();
-            // System.out.println("AAA");
         }
     }
 
     private WebDriver getWebDriver() {
         // create a Chrome Web Driver
         System.setProperty(CHROME_DRIVER_NAME, driverPath);
+        ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.addArguments("--headless");
         WebDriver driver = new ChromeDriver();
         driver.get(url);
         return driver;
     }
 
     private void doLogin(final WebDriver driver) throws InterruptedException {
-        driver.findElement(By.id("userName")).sendKeys(user.replaceAll("_", "."));
+        driver.findElement(By.id("userName")).sendKeys(user);
         driver.findElement(By.id("userPass")).sendKeys(pass);
         driver.findElement(By.id("submitLogin")).click();
         while (!driver.getCurrentUrl().contains("https://helpdesk.tqi.com.br/tqiextranet/extranet.asp")) {
@@ -104,14 +135,15 @@ public class Runner {
     private List<LocalDate> getDatesBetween(
             LocalDate startDate, LocalDate endDate) {
 
-        long numOfDaysBetween = ChronoUnit.DAYS.between(startDate, endDate)+1l;
+        long numOfDaysBetween = ChronoUnit.DAYS.between(startDate, endDate) + 1L;
         if (numOfDaysBetween > 0) {
             return IntStream.iterate(0, i -> i + 1)
                     .limit(numOfDaysBetween)
-                    .mapToObj(i -> startDate.plusDays(i))
+                    .mapToObj(startDate::plusDays)
+                    .filter(f -> !WEEKEND.contains(f.getDayOfWeek().getValue()) && !HOLIDAYS.contains(f))
                     .collect(Collectors.toList());
         } else {
-            return Arrays.asList(startDate);
+            return Collections.singletonList(startDate);
         }
 
     }
