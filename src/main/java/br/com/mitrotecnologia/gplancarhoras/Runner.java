@@ -37,19 +37,20 @@ public class Runner {
 
     static {
         List<LocalDate> dates = Arrays.asList(
-                LocalDate.of(2018, 1, 1),
-                LocalDate.of(2018, 3, 30),
-                LocalDate.of(2018, 4, 21),
-                LocalDate.of(2018, 5, 1),
-                LocalDate.of(2018, 5, 31),
-                LocalDate.of(2018, 8, 15),
-                LocalDate.of(2018, 8, 31),
-                LocalDate.of(2018, 9, 7),
-                LocalDate.of(2018, 10, 12),
-                LocalDate.of(2018, 11, 2),
-                LocalDate.of(2018, 11, 15),
-                LocalDate.of(2018, 11, 20),
-                LocalDate.of(2018, 12, 25));
+                LocalDate.of(2019, 1, 1),
+                LocalDate.of(2019, 3, 30),
+                LocalDate.of(2019, 4, 19),
+                LocalDate.of(2019, 4, 21),
+                LocalDate.of(2019, 5, 1),
+                LocalDate.of(2019, 5, 31),
+                LocalDate.of(2019, 8, 15),
+                LocalDate.of(2019, 8, 31),
+                LocalDate.of(2019, 9, 7),
+                LocalDate.of(2019, 10, 12),
+                LocalDate.of(2019, 11, 2),
+                LocalDate.of(2019, 11, 15),
+                LocalDate.of(2019, 11, 20),
+                LocalDate.of(2019, 12, 25));
         HOLIDAYS = Collections.unmodifiableSet(new HashSet<>(dates));
     }
 
@@ -63,8 +64,6 @@ public class Runner {
     private String user;
     @Value("${pass}")
     private String pass;
-    @Value("${app_name}")
-    private String appName;
     @Value("${worked_hours}")
     private String workedHours;
     @Value("${task}")
@@ -107,7 +106,6 @@ public class Runner {
             driver.findElement(By.name("CmbAtividade")).click();
             driver.findElement(By.xpath("/html/body/div[10]/form/table[1]/tbody/tr[3]/td[2]/select/option[14]"))
                     .click();
-            driver.findElement(By.name("DesAplicativo")).sendKeys(appName);
             driver.findElement(By.name("horas_trab")).sendKeys(workedHours);
             driver.findElement(By.name("BtGravar")).click();
         }
