@@ -1,5 +1,6 @@
 package br.com.mitrotecnologia.gplancarhoras;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author vinicius_brito
  * @version $Revision: $<br/>
- *          $Id: $
+ * $Id: $
  * @since 10/30/18 12:42 PM
  */
 @Component
@@ -55,19 +56,14 @@ public class Runner {
     }
 
     private static final String CHROME_DRIVER_NAME = "webdriver.chrome.driver";
+    private static final String GP_URL = "https://helpdesk.tqi.com.br/sso/login.action?urlRedirectApp=https://helpdesk.tqi.com.br/tqiextranet/autenticacao.asp";
 
-    @Value("${url_gp}")
-    private String url;
-    @Value("${driver_path}")
-    private String driverPath;
     @Value("${gpuser}")
     private String user;
     @Value("${pass}")
     private String pass;
     @Value("${worked_hours}")
     private String workedHours;
-    @Value("${task}")
-    private String task;
     @Value("${start_date}")
     private String startDate;
     @Value("${end_date}")
@@ -104,20 +100,35 @@ public class Runner {
                     .findFirst().get();
             t.click();
             driver.findElement(By.name("CmbAtividade")).click();
-            driver.findElement(By.xpath("/html/body/div[10]/form/table[1]/tbody/tr[3]/td[2]/select/option[14]"))
-                    .click();
+            driver.findElement(By.xpath("/html/body/div[10]/form/table[1]/tbody/tr[3]/td[2]/select/option[15]"));
+            driver.findElement(By.xpath("/html/body/div[10]/form/table[1]/tbody/tr[3]/td[2]/select/option[15]")).click();
             driver.findElement(By.name("horas_trab")).sendKeys(workedHours);
             driver.findElement(By.name("BtGravar")).click();
         }
     }
 
     private WebDriver getWebDriver() {
+
+        String currentOS = System.getProperty("os.name");
+
+        String driverPath;
+
+        if (currentOS.equalsIgnoreCase("linux")) {
+            driverPath = new File("src/main/resources/driver/chromedriver_linux").getAbsolutePath();
+        } else if (currentOS.equalsIgnoreCase("windows")) {
+            driverPath = new File("src/main/resources/driver/chromedriver.exe").getAbsolutePath();
+        } else if (currentOS.equalsIgnoreCase("mac os")) {
+            driverPath = new File("src/main/resources/driver/chromedriver_mac").getAbsolutePath();
+        } else {
+            throw new RuntimeException("Sistema operacional não suportado.");
+        }
+
         // create a Chrome Web Driver
         System.setProperty(CHROME_DRIVER_NAME, driverPath);
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--headless");
         WebDriver driver = new ChromeDriver();
-        driver.get(url);
+        driver.get(GP_URL);
         return driver;
     }
 
